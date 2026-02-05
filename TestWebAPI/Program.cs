@@ -10,12 +10,19 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<TestDbContext>(options =>
-    options.UseSqlServer(
+    options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
 
 var app = builder.Build();
+
+// 👇 ADD THIS BLOCK
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TestDbContext>();
+    db.Database.Migrate();
+}
 
 // ✅ ENABLE SWAGGER FOR ALL ENVIRONMENTS (Railway included)
 app.UseSwagger();
