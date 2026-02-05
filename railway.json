@@ -1,0 +1,9 @@
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "root": "TestWebAPI"
+  },
+  "deploy": {
+    "startCommand": "dotnet TestWebAPI.dll"
+  }
+}
