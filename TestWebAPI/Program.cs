@@ -9,11 +9,26 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//builder.Services.AddDbContext<TestDbContext>(options =>
+//    options.UseNpgsql(
+//        builder.Configuration.GetConnectionString("DefaultConnection")
+//    )
+//);
+
 builder.Services.AddDbContext<TestDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
-);
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+    if (connectionString.Contains("Host=")) // PostgreSQL (Railway)
+    {
+        options.UseNpgsql(connectionString);
+    }
+    else // SQL Server (Local)
+    {
+        options.UseSqlServer(connectionString);
+    }
+});
+
 
 var app = builder.Build();
 
