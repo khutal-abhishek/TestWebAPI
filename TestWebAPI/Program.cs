@@ -11,18 +11,26 @@ builder.Services.AddSwaggerGen();
 // DATABASE CONFIG
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Detect PostgreSQL (Railway)
-if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("Host="))
-{
-    builder.Services.AddDbContext<TestDbContext>(options =>
-        options.UseNpgsql(connectionString));
-}
-else
-{
-    // Local SQL Server (Windows only)
-    builder.Services.AddDbContext<TestDbContext>(options =>
-        options.UseSqlServer(connectionString));
-}
+//// Detect PostgreSQL (Railway)
+//if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("Host="))
+//{
+//    builder.Services.AddDbContext<TestDbContext>(options =>
+//        options.UseNpgsql(connectionString));
+//}
+//else
+//{
+//    // Local SQL Server (Windows only)
+//    builder.Services.AddDbContext<TestDbContext>(options =>
+//        options.UseSqlServer(connectionString));
+//}
+
+
+builder.Services.AddDbContext<TestDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    )
+);
+
 
 var app = builder.Build();
 
