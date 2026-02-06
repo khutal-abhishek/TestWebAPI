@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TestWebAPI.Model
 {
+    [Table("TestTable")] // MUST match PostgreSQL table
     public class Test
     {
         [Key]
