@@ -8,11 +8,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ✅ Read Railway env variable safely
+// Read Railway environment variable
 var connectionString =
     builder.Configuration["ConnectionStrings__DefaultConnection"];
 
-// ✅ Do NOT crash if missing
+// Do NOT crash app if missing
 if (!string.IsNullOrWhiteSpace(connectionString))
 {
     builder.Services.AddDbContext<TestDbContext>(options =>
@@ -20,12 +20,11 @@ if (!string.IsNullOrWhiteSpace(connectionString))
 }
 else
 {
-    Console.WriteLine("⚠️ Database connection string not found. App started without DB.");
+    Console.WriteLine("⚠️ Database connection string not found.");
 }
 
 var app = builder.Build();
 
-// Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
