@@ -17,14 +17,14 @@ namespace TestWebAPI.Controllers
         [HttpGet]
         public IActionResult GetTests()
         {
-            var Test = _context.tests.ToList();
+            var Test = _context.Tests.ToList();
             return Ok(Test);
         }
 
         [HttpPost]
         public IActionResult SaveTests(Test test)
         {
-            _context.tests.Add(test);
+            _context.Tests.Add(test);
             _context.SaveChanges();
             return Ok(new {
                 message = "test save successfully", 
@@ -35,7 +35,7 @@ namespace TestWebAPI.Controllers
         [HttpPut]
         public IActionResult UpdateTest(Test test)
         {
-            var record = _context.tests.Find(test.Id);           
+            var record = _context.Tests.Find(test.Id);           
             if (record != null)
             {
                 record.Name = test.Name;
@@ -56,10 +56,10 @@ namespace TestWebAPI.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeleteTest(int id)
         {
-            var record = _context.tests.Find(id);
+            var record = _context.Tests.Find(id);
             if (record != null)
             {
-                _context.tests.Remove(record);
+                _context.Tests.Remove(record);
                 _context.SaveChanges();
                 return Ok(new { message = "test deleted successfully" });
             }
