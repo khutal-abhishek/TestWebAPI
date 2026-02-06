@@ -8,28 +8,26 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ✅ PostgreSQL ONLY (Railway)
+// ✅ Read Railway env variable safely
 var connectionString =
     builder.Configuration["ConnectionStrings__DefaultConnection"];
 
-if (string.IsNullOrWhiteSpace(connectionString))
+// ✅ Do NOT crash if missing
+if (!string.IsNullOrWhiteSpace(connectionString))
 {
-    throw new Exception("Database connection string is missing.");
+    builder.Services.AddDbContext<TestDbContext>(options =>
+        options.UseNpgsql(connectionString));
 }
-
-builder.Services.AddDbContext<TestDbContext>(options =>
-    options.UseNpgsql(connectionString)
-);
+else
+{
+    Console.WriteLine("⚠️ Database connection string not found. App started without DB.");
+}
 
 var app = builder.Build();
 
 // Swagger
 app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "TestWebAPI v1");
-    c.RoutePrefix = "swagger";
-});
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
