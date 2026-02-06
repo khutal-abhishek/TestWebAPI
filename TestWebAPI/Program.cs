@@ -8,15 +8,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 🔥 Read Railway DATABASE_URL
-var databaseUrl = builder.Configuration["DATABASE_URL"];
+// 🔴 READ DATABASE_URL ONLY
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
 if (string.IsNullOrWhiteSpace(databaseUrl))
 {
-    throw new Exception("DATABASE_URL not found");
+    throw new Exception("DATABASE_URL is missing in Railway Variables");
 }
 
-// 🔥 Convert URL → Connection String
+// 🔴 CONVERT URL → Npgsql connection string
 var uri = new Uri(databaseUrl);
 var userInfo = uri.UserInfo.Split(':');
 
@@ -29,8 +29,9 @@ var connectionString = new NpgsqlConnectionStringBuilder
     Database = uri.AbsolutePath.Trim('/'),
     SslMode = SslMode.Require,
     TrustServerCertificate = true
-}.ConnectionString;
+}.ToString();
 
+// 🔴 REGISTER DB CONTEXT
 builder.Services.AddDbContext<TestDbContext>(options =>
     options.UseNpgsql(connectionString)
 );
