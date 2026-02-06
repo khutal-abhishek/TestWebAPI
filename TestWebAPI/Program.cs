@@ -3,27 +3,26 @@ using TestWebAPI.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ✅ PostgreSQL connection (Railway)
 var connectionString =
     builder.Configuration["ConnectionStrings__DefaultConnection"];
 
-if (string.IsNullOrWhiteSpace(connectionString))
+if (!string.IsNullOrWhiteSpace(connectionString))
 {
-    throw new Exception("Database connection string is missing.");
+    builder.Services.AddDbContext<TestDbContext>(options =>
+        options.UseNpgsql(connectionString)
+    );
 }
-
-builder.Services.AddDbContext<TestDbContext>(options =>
-    options.UseNpgsql(connectionString)
-);
+else
+{
+    Console.WriteLine("❌ Database connection string is missing.");
+}
 
 var app = builder.Build();
 
-// Swagger (enabled in production)
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -31,7 +30,6 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
