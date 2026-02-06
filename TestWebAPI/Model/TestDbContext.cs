@@ -10,5 +10,11 @@ namespace TestWebAPI.Model
         }
 
         public DbSet<Test> Tests { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // 🔑 Explicit table mapping (IMPORTANT)
+            modelBuilder.Entity<Test>().ToTable("TestTable");
+        }
     }
 }

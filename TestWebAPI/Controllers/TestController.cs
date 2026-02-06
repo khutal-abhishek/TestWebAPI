@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TestWebAPI.Model;
 
 namespace TestWebAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class TestController : Controller
+    public class TestController : ControllerBase
     {
         private readonly TestDbContext _context;
 
@@ -14,60 +15,64 @@ namespace TestWebAPI.Controllers
             _context = context;
         }
 
+        // ✅ GET: /Test
         [HttpGet]
-        public IActionResult GetTests()
+        public async Task<IActionResult> GetAll()
         {
-            var Test = _context.Tests.ToList();
-            return Ok(Test);
+            var data = await _context.Tests.ToListAsync();
+            return Ok(data);
         }
 
+        // ✅ GET: /Test/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var test = await _context.Tests.FindAsync(id);
+            if (test == null)
+                return NotFound();
+
+            return Ok(test);
+        }
+
+        // ✅ POST: /Test
         [HttpPost]
-        public IActionResult SaveTests(Test test)
+        public async Task<IActionResult> Create(Test test)
         {
             _context.Tests.Add(test);
-            _context.SaveChanges();
-            return Ok(new {
-                message = "test save successfully", 
-                data =test
-            });
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetById), new { id = test.Id }, test);
         }
 
-        [HttpPut]
-        public IActionResult UpdateTest(Test test)
+        // ✅ PUT: /Test/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, Test test)
         {
-            var record = _context.Tests.Find(test.Id);           
-            if (record != null)
-            {
-                record.Name = test.Name;
-                record.Phone = test.Phone;
-                _context.SaveChanges();
-                return Ok(new {
-                    message = "test updated successfully", 
-                    data =record
-                });
-            }
-            else
-            {
-                 return NotFound(new { status="Error",message = "test not found" });
-            }
+            if (id != test.Id)
+                return BadRequest("ID mismatch");
+
+            var exists = await _context.Tests.AnyAsync(x => x.Id == id);
+            if (!exists)
+                return NotFound();
+
+            _context.Entry(test).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
-
+        // ✅ DELETE: /Test/{id}
         [HttpDelete("{id}")]
-        public IActionResult DeleteTest(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var record = _context.Tests.Find(id);
-            if (record != null)
-            {
-                _context.Tests.Remove(record);
-                _context.SaveChanges();
-                return Ok(new { message = "test deleted successfully" });
-            }
-            else
-            {
-                return NotFound(new { status = "Error", message = "test not found" });
-            }
-        }
+            var test = await _context.Tests.FindAsync(id);
+            if (test == null)
+                return NotFound();
 
+            _context.Tests.Remove(test);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }
