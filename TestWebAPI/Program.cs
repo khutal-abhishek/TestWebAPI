@@ -1,32 +1,42 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using TestWebAPI.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ✅ READ DATABASE URL (Railway standard)
-var connectionString =
-    builder.Configuration["DATABASE_URL"]
-    ?? builder.Configuration["ConnectionStrings__DefaultConnection"];
+// 🔥 Read Railway DATABASE_URL
+var databaseUrl = builder.Configuration["DATABASE_URL"];
 
-// ❌ DO NOT THROW EXCEPTION
-if (string.IsNullOrWhiteSpace(connectionString))
+if (string.IsNullOrWhiteSpace(databaseUrl))
 {
-    Console.WriteLine("⚠️ Database connection string not found");
+    throw new Exception("DATABASE_URL not found");
 }
-else
+
+// 🔥 Convert URL → Connection String
+var uri = new Uri(databaseUrl);
+var userInfo = uri.UserInfo.Split(':');
+
+var connectionString = new NpgsqlConnectionStringBuilder
 {
-    builder.Services.AddDbContext<TestDbContext>(options =>
-        options.UseNpgsql(connectionString));
-}
+    Host = uri.Host,
+    Port = uri.Port,
+    Username = userInfo[0],
+    Password = userInfo[1],
+    Database = uri.AbsolutePath.Trim('/'),
+    SslMode = SslMode.Require,
+    TrustServerCertificate = true
+}.ConnectionString;
+
+builder.Services.AddDbContext<TestDbContext>(options =>
+    options.UseNpgsql(connectionString)
+);
 
 var app = builder.Build();
 
-// Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
