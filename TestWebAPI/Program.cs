@@ -8,33 +8,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// DATABASE CONFIG
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// ✅ PostgreSQL ONLY (Railway)
+var connectionString =
+    builder.Configuration["ConnectionStrings__DefaultConnection"];
 
-//// Detect PostgreSQL (Railway)
-//if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("Host="))
-//{
-//    builder.Services.AddDbContext<TestDbContext>(options =>
-//        options.UseNpgsql(connectionString));
-//}
-//else
-//{
-//    // Local SQL Server (Windows only)
-//    builder.Services.AddDbContext<TestDbContext>(options =>
-//        options.UseSqlServer(connectionString));
-//}
-
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new Exception("Database connection string is missing.");
+}
 
 builder.Services.AddDbContext<TestDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
+    options.UseNpgsql(connectionString)
 );
-
 
 var app = builder.Build();
 
-// Swagger ENABLED for Railway
+// Swagger
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
