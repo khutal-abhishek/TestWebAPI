@@ -3,35 +3,35 @@ using TestWebAPI.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Controllers & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// ✅ READ DATABASE URL (Railway standard)
 var connectionString =
-    builder.Configuration["ConnectionStrings__DefaultConnection"];
+    builder.Configuration["DATABASE_URL"]
+    ?? builder.Configuration["ConnectionStrings__DefaultConnection"];
 
-if (!string.IsNullOrWhiteSpace(connectionString))
+// ❌ DO NOT THROW EXCEPTION
+if (string.IsNullOrWhiteSpace(connectionString))
 {
-    builder.Services.AddDbContext<TestDbContext>(options =>
-        options.UseNpgsql(connectionString)
-    );
+    Console.WriteLine("⚠️ Database connection string not found");
 }
 else
 {
-    Console.WriteLine("❌ Database connection string is missing.");
+    builder.Services.AddDbContext<TestDbContext>(options =>
+        options.UseNpgsql(connectionString));
 }
 
 var app = builder.Build();
-app.UseDeveloperExceptionPage();
 
-
+// Swagger
 app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "TestWebAPI v1");
-    c.RoutePrefix = "swagger";
-});
+app.UseSwaggerUI();
 
+app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
 app.Run();
