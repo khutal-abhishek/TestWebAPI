@@ -8,6 +8,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// ✅ ADD CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular",
+        policy =>
+        {
+            policy
+                .AllowAnyOrigin()   // for now (OK for learning)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 // 🔴 READ DATABASE_URL ONLY
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
@@ -40,7 +53,8 @@ var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
-
+// ✅ USE CORS (VERY IMPORTANT – before MapControllers)
+app.UseCors("AllowAngular");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
